@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body.blur-theme::before {
+    position: fixed;
+    background: url(../public/blur-bg.jpg) center center no-repeat;
+    background-size: cover;
+}
+body.blur-theme::before, body.mobile.blur-theme .body-bg::before {
+    content: '';
+    height: 100%;
+    top: 0;
+    left: 0;
+    will-change: transform;
+    z-index: -1;
+    width: 100%;
+}
+#__next{
+    height:100%;
+}
