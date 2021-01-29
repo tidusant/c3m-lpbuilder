@@ -39,7 +39,11 @@
    <!--a:Anchor Link:anchor.png-->
    <a id="{{Id}}"></a><div class="element-not-editable">&nbsp;</div>
 ```
+### note for js in template:
+- if query by class: remember add class declare in css
+- don't use popup modal with class "btnModal" 
+- submit form MUST call serverSubmit() function after validation
    
 ### run at local
-env API_ADD=http://c3md-api.duyhf.com go run *.go -debug=true
+env API_ADD=http://c3md.duyhf.com/api/ go run *.go -debug=true
 env API_ADD=http://127.0.0.1:8081 go run *.go -debug=true 

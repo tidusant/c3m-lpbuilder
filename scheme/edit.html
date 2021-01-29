@@ -77,7 +77,7 @@
     </div>
 </div>
 
-{{customjs}}
+
 <script src="/scheme/dragula.min.js"></script>
 <script>
     //==========modal script
@@ -109,8 +109,8 @@
     //=====================
     const MTools={{mtoolcontent}}
         const navitemtemplate=`{{navitemtemplate}}`
-    console.log(MTools)
-    const drake=dragula([document.querySelector("div.landingpage-pickzone"),...document.querySelectorAll("div.drop-zone"),document.querySelector("div.mega-menu")],{
+
+    const drake=dragula([document.querySelector("div.landingpage-pickzone"),...document.querySelectorAll("div.drop-zone"),...document.querySelectorAll("div.mega-menu")],{
         copy: function (el, target) {
             return !target.classList.contains("drop-zone")
 
@@ -122,20 +122,20 @@
 
         copySortSource: false,
         accepts: function (el, target, source, sibling) {
-
+            console.log(el)
             return target.classList.contains("drop-zone")
             //return true; // elements can be dropped in any of the `containers` by default
         },
     });
 
     drake.on('shadow', (el, target, source) => {
-        console.log(el,target,source)
+
 
         if(!target||!target.classList.contains("drop-zone"))return
         if(!source||!(source.classList.contains("landingpage-pickzone")||source.classList.contains("mega-menu")))return
-        el.className="m-auto landingpage-cursor-pointer relative gu-transit"
+        el.className="m-auto landingpage-item-content relative gu-transit"
 
-        console.log(el.getAttribute("lp-data-id"))
+
         const content=MTools[el.getAttribute("lp-data-id").replace("landingpage-tool-","")]
 
         el.innerHTML=content
@@ -196,6 +196,7 @@
     }
     function checkEditable(el){
         if(el.classList.contains("element-not-editable"))return
+        if(el.classList.contains("close-modal"))return
         if(el.tagName=="A"){
             el.onclick=(e)=>{
                 e.preventDefault()
@@ -222,7 +223,9 @@
             }
         }
         if(el.tagName=="BUTTON"){
-            changeButtonOnclickEvent(el)
+            if(el.classList.contains("btnsubmit"))
+                el.onclick=()=>{return false}
+            else changeButtonOnclickEvent(el)
         }
         if(el.childElementCount>0){
             if(el.tagName=="P"){

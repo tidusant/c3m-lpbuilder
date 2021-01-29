@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/tidusant/c3m/repo/models"
+
 	"github.com/tidusant/c3m/common/c3mcommon"
 	"github.com/tidusant/c3m/common/log"
 	"math/rand"
@@ -20,6 +22,7 @@ import (
 var (
 	loaddatadone bool
 	layoutPath   = "./template/out"
+	blankPath    = "./tplblank"
 	schemePath   = "./scheme"
 	templatePath = "./templates"
 	apiserver    string
@@ -167,8 +170,39 @@ func initdata() {
 	log.Printf("load layout...")
 
 	log.Printf("check folder...")
+
+	//	var rt models.RequestResult
+	//	json.Unmarshal([]byte(c3mcommon.RequestAPI(apiserver,"CreateSex|sf","")),&rt)
+	//log.Debugf("test session:%+v",rt.Data)
+	//	c3mcommon.RequestAPI(apiserver,"aut|sf",mycrypto.EncDat2(rt.Data)+"|i|orgid,orgname,userid,useremail")
+	//log.Printf("test %s",mycrypto.DecodeOld(`NfEIIcwd9bNNgcJOFeyQxbJQiIiOiGdhRksIiI6SZnF2zVWTiiIk5WvZGI0mbg42pN3cllI6IivJncFCLx0iiMXd0GdTJy`,8))
+
 	if _, err := os.Stat(templatePath); err != nil {
 		os.Mkdir(templatePath, 755)
 	}
 	loaddatadone = true
+
+	//test
+	//str:=`N4IgwghgtgDhCWBzAdgSQCIgFwgOwAYBGAFgA98KLDdCA3AKwEFmQAacAVwGcAXAeygAJPr2w8AThwCm7dAITIActCnYQhAMwA6AEyEdWwgFZcu4sTYgAYgBUACgFUuU8WohcAJgDNLtu3fcuN08fAF8gA`
+	//test,err:= mycrypto.DecompressFromBase64(str)
+	//if err!=nil{
+	//	fmt.Errorf(err.Error())
+	//}
+	//log.Debug("test: "+test)
+	//var lp models.LandingPage
+	//err = json.Unmarshal([]byte(test), &lp)
+	//if err != nil {
+	//	log.Error(err.Error())
+	//}
+
+	str := `{"status":1,"error":"","message":"","data":""}`
+	var rs models.RequestResult
+	err := json.Unmarshal([]byte(str), &rs)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		log.Debugf("%+v", rs)
+	}
+
 }

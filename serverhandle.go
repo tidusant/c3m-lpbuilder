@@ -7,7 +7,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/tidusant/c3m-common/c3mcommon"
+	"github.com/tidusant/c3m/common/c3mcommon"
+
 	"github.com/tidusant/c3m/repo/models"
 	"io/ioutil"
 	"strings"
@@ -80,7 +81,7 @@ func HandleSubmit(c *gin.Context) models.RequestResult {
 	session := args[0]
 	action := "s"
 	if len(args) > 2 {
-		action = "rs"
+		action = args[2]
 	}
 	//var writer io.Writer
 	//w := zip.NewWriter(writer)

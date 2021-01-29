@@ -44,13 +44,13 @@ export function encDat2(data, oddnumber) {
     return x + data
 }
 
-export function decDat(data, compress) {
+export function decDat(data, div) {
     let key = data;
     if (key === "") return '';
 
     let oddstr = 'd';
-    let div = 8;
-    if (compress) div = 2;
+    div =div|| 8;
+    
     let l = Math.floor((key.length - 2) / div);
     //console.log("l",l)
     let x2 = key.substr(l, 2);
@@ -84,10 +84,9 @@ export function decDat(data, compress) {
         }
         base64 = base64.substr(0, base64.length - x2);
         //console.log("base64",base64)
-        if (compress) {
+        
             data = LZString["decompressFromBase64"](base64);
-        }
-        else data = base64decode(base64);
+        //data = base64decode(base64);
 
         return data;
     }

@@ -67,6 +67,13 @@ export default function Home() {
       if (state.isLoading) {
         switch (state.nextAction) {
           case "get":
+            //test
+            GetData("lp", "p|test", userstate)
+            .then(data => {
+              console.log('will', data)
+              
+            });
+
             GetDataLocal("getlocal", Cookies.get("_s")).then(rs => {
               console.log("data return", rs)
               if (rs.Status === 1) {
@@ -84,7 +91,7 @@ export default function Home() {
             })
             break;
           case "submit":
-            GetDataLocal("submit", Cookies.get("_s") + "|" + state.payload.name+(state.payload&&"|re")).then(rs => {
+            GetDataLocal("submit", Cookies.get("_s") + "|" + state.payload.name+(state.payload.re&&"|rs"||"")).then(rs => {
               if (rs.Status === 1) {
                 //update template
                 const tpls = []
@@ -201,7 +208,7 @@ export default function Home() {
                             <div className="userpic-wrapper">
                               <img src={`/${tpl.Path}/screenshot.jpg`} />
                             </div>
-                            {tpl.Status == 0 &&
+                            {(tpl.Status == 0 || tpl.Status == -1) &&
                               <i onClick={e => { e.stopPropagation(); deleteTemplate(tpl.Name) }} className="ion-ios-close-outline ng-scope"></i>
                             }
                             <a href={`/edit?tpl=${tpl.Name}`} className="change-userpic" >{tpl.Name} </a>
@@ -248,12 +255,12 @@ export default function Home() {
                     <>
                       {tpl.Status == 1 &&
                         <div key={tpl.Name} className="mx-5 my-12 float-left">
-                          <div className="userpic" onClick={() => { window.location = `/edit?tpl=${tpl.Name}` }}>
+                          <div className="userpic">
                             <div className="userpic-wrapper">
                               <img src={`${process.env.NEXT_PUBLIC_TESTLP_URL}templates/${tpl.Path}/screenshot.jpg`} />
                             </div>
 
-                            
+                            <a className="change-userpic" >{tpl.Name} </a>
                           </div>
 
                           {(tpl.Status == 1) &&

@@ -4,6 +4,7 @@ import Router from 'next/router'
 import { useSelector, useDispatch } from 'react-redux'
 
 export async function GetData(requestUrl, params, userstate) {
+    
     //cannot use dispatch in this function
     let rs = { Status: 0, Error: "", Message: "", Data: {} }
     let sex = Cookies.get("_s")
@@ -27,19 +28,19 @@ export async function GetData(requestUrl, params, userstate) {
                 }
             })
             const datatext = await res.text();
-            
+
             //get data and decode
             let data = ""
             try {
-                data = decDat(datatext);
+                
+                    data = decDat(datatext);
             }
             catch (ex) {
-                console.log("error in first dec:",ex.message)
-                    data = decDat(datatext, true);
-                
+                console.log(ex.message)
+
             }
             //parse to json object
-            
+
             let rtdata = {};
             try {
                 rtdata = JSON.parse(data)
@@ -50,8 +51,8 @@ export async function GetData(requestUrl, params, userstate) {
             } catch (ex) {
                 rs.Error = ex.message;
             }
-        
-            
+
+
             //update session if request success
 
             if (rtdata.Status === 1) {
@@ -64,7 +65,7 @@ export async function GetData(requestUrl, params, userstate) {
                 }
 
             }
-        
+
         } catch (error) {
             rs.Error = error.message;
         }
@@ -77,42 +78,42 @@ export async function GetDataLocal(requestUrl, params) {
     //cannot use dispatch in this function
     let rs = { Status: 0, Error: "", Message: "", Data: {} }
 
-        Log("call local: " + requestUrl + " data:" + params )
+    Log("call local: " + requestUrl + " data:" + params)
 
+    try {
+        const res = await fetch(requestUrl, {
+            method: 'POST',
+            body: "data=" + params,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        const datatext = await res.text();
+
+
+        let rtdata = {};
         try {
-            const res = await fetch( requestUrl, {
-                method: 'POST',
-                body: "data=" + params,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            })
-            const datatext = await res.text();
-
-
-            let rtdata = {};
-            try {
-                rtdata = JSON.parse(datatext)
-                if (rtdata.Status !== undefined) rs.Status = rtdata.Status;
-                if (rtdata.Error !== undefined) rs.Error = rtdata.Error;
-                if (rtdata.Message !== undefined) rs.Message = rtdata.Message;
-                if (rtdata.Data !== undefined) rs.Data = rtdata.Data;
-            } catch (ex) {
-                rs.Error = ex.message;
-            }
-
-            if (rtdata.Status === -1) {
-
-                if (Router.pathname != "/login") {
-                    Cookies.set("redirect_login", Router.pathname)
-                    SafeRedirect("/login")
-                }
-
-            }
-
-        } catch (error) {
-            rs.Error = error.message;
+            rtdata = JSON.parse(datatext)
+            if (rtdata.Status !== undefined) rs.Status = rtdata.Status;
+            if (rtdata.Error !== undefined) rs.Error = rtdata.Error;
+            if (rtdata.Message !== undefined) rs.Message = rtdata.Message;
+            if (rtdata.Data !== undefined) rs.Data = rtdata.Data;
+        } catch (ex) {
+            rs.Error = ex.message;
         }
+
+        if (rtdata.Status === -1) {
+
+            if (Router.pathname != "/login") {
+                Cookies.set("redirect_login", Router.pathname)
+                SafeRedirect("/login")
+            }
+
+        }
+
+    } catch (error) {
+        rs.Error = error.message;
+    }
 
     return Promise.resolve(rs);
 
@@ -129,21 +130,21 @@ export async function checkAuth(login_redirect, userstate) {
     let rs = { Status: 0, Error: "not auth", Message: "", Data: {} }
     const sex = Cookies.get('_s');
     var isLogin = false
-    
+
     if (!userstate.username) {
-        
-        if (sex) {            
+
+        if (sex) {
             //call request to check auth for this session
             const res = await GetData("aut", "t", userstate)
 
             // .then(data=>{      
-                console.log("data return:",res)          
+            console.log("data return:", res)
             if (res.Status === 1) {
-                rs = res                
+                rs = res
                 try {
                     rs.data = JSON.parse(rs.Data)
-                    if(rs.data.username!=""){
-                        isLogin=true
+                    if (rs.data.username != "") {
+                        isLogin = true
                         dispatch({
                             type: 'USER',
                             data: rs.data
@@ -158,17 +159,17 @@ export async function checkAuth(login_redirect, userstate) {
         }
         //     });
         //}
-    }else{
-        rs.status=1
-        isLogin=true
+    } else {
+        rs.status = 1
+        isLogin = true
     }
     if (!isLogin) {
         // dispatch({
         //     type: 'LOGIN_REDIRECT',
         //     data: login_redirect
         //   })
-        
-        Cookies.set("redirect_login",login_redirect)
+
+        Cookies.set("redirect_login", login_redirect)
         SafeRedirect("/login")
 
     }
@@ -176,11 +177,11 @@ export async function checkAuth(login_redirect, userstate) {
 
 }
 
-export function SafeRedirect(redirect){
-    if(typeof window !== 'undefined'){
+export function SafeRedirect(redirect) {
+    if (typeof window !== 'undefined') {
         Router.push(redirect)
-    }else{
+    } else {
         //wait 100ms to page fully render
-        setTimeout(()=>{SafeRedirect(redirect)},100)
+        setTimeout(() => { SafeRedirect(redirect) }, 100)
     }
 }
