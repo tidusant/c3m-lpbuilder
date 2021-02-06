@@ -10,9 +10,10 @@ import (
 	"github.com/tidusant/c3m/common/c3mcommon"
 
 	"github.com/tidusant/c3m/repo/models"
+
 	"io/ioutil"
 	"strings"
-
+	//"gopkg.in/sourcemap.v1/base64vlq"
 	"github.com/gin-gonic/gin"
 	"io"
 	"os"
@@ -65,7 +66,7 @@ func HandleSubmitZipFile(c *gin.Context) models.RequestResult {
 
 		return nil
 	}
-	err = filepath.Walk(templatePath+"/"+name+"/", walker)
+	err = filepath.Walk(templateFolder+"/"+name+"/", walker)
 	if err != nil {
 		return models.RequestResult{Error: err.Error()}
 	}
@@ -100,6 +101,9 @@ func HandleSubmit(c *gin.Context) models.RequestResult {
 
 	walker := func(path string, info os.FileInfo, err error) error {
 		fmt.Printf("Crawling: %#v\n", path)
+		if strings.Index(path, ".DS_Store") > -1 {
+			return nil
+		}
 		if err != nil {
 			return err
 		}
@@ -113,11 +117,10 @@ func HandleSubmit(c *gin.Context) models.RequestResult {
 		mfile[strings.Replace(path, "templates/"+name+"/", "", 1)] = b
 		return nil
 	}
-	err := filepath.Walk(templatePath+"/"+name+"/", walker)
+	err := filepath.Walk(templateFolder+"/"+name+"/", walker)
 	if err != nil {
 		return models.RequestResult{Error: err.Error()}
 	}
-
 	// marshal and gzip
 	bfile, err := json.Marshal(mfile)
 	if err != nil {
@@ -126,9 +129,10 @@ func HandleSubmit(c *gin.Context) models.RequestResult {
 	var bb bytes.Buffer
 	w := gzip.NewWriter(&bb)
 	w.Write(bfile)
-	w.Close()
-	b64content := base64.StdEncoding.EncodeToString(bb.Bytes())
 
+	w.Close()
+
+	b64content := base64.StdEncoding.EncodeToString(bb.Bytes())
 	bodystr := c3mcommon.RequestAPI(apiserver, "lptpl", session+"|"+action+"|"+name+","+b64content)
 	var rs models.RequestResult
 	err = json.Unmarshal([]byte(bodystr), &rs)

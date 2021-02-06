@@ -5,10 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/tidusant/c3m/repo/models"
-
 	"github.com/tidusant/c3m/common/c3mcommon"
 	"github.com/tidusant/c3m/common/log"
+	"github.com/tidusant/c3m/common/mycrypto"
 	"math/rand"
 	"net/http"
 	"os"
@@ -20,12 +19,13 @@ import (
 )
 
 var (
-	loaddatadone bool
-	layoutPath   = "./template/out"
-	blankPath    = "./tplblank"
-	schemePath   = "./scheme"
-	templatePath = "./templates"
-	apiserver    string
+	loaddatadone   bool
+	layoutPath     = "./template/out"
+	blankPath      = "./tplblank"
+	schemeFolder   = "./scheme"
+	templateFolder = "./templates"
+	rootPath       = ""
+	apiserver      string
 )
 
 func main() {
@@ -177,14 +177,15 @@ func initdata() {
 	//	c3mcommon.RequestAPI(apiserver,"aut|sf",mycrypto.EncDat2(rt.Data)+"|i|orgid,orgname,userid,useremail")
 	//log.Printf("test %s",mycrypto.DecodeOld(`NfEIIcwd9bNNgcJOFeyQxbJQiIiOiGdhRksIiI6SZnF2zVWTiiIk5WvZGI0mbg42pN3cllI6IivJncFCLx0iiMXd0GdTJy`,8))
 
-	if _, err := os.Stat(templatePath); err != nil {
-		os.Mkdir(templatePath, 755)
+	if _, err := os.Stat(templateFolder); err != nil {
+		os.Mkdir(templateFolder, 755)
 	}
 	loaddatadone = true
 
 	//test
-	//str:=`N4IgwghgtgDhCWBzAdgSQCIgFwgOwAYBGAFgA98KLDdCA3AKwEFmQAacAVwGcAXAeygAJPr2w8AThwCm7dAITIActCnYQhAMwA6AEyEdWwgFZcu4sTYgAYgBUACgFUuU8WohcAJgDNLtu3fcuN08fAF8gA`
-	//test,err:= mycrypto.DecompressFromBase64(str)
+	str := `AAHNBFZEgpY355YmtXTUJGTM4XRllNMwhev2cxm1BLRkMMXSZYImWFjElVXkdJk`
+	test := mycrypto.Decode4(str)
+	log.Debugf("test: %s", test)
 	//if err!=nil{
 	//	fmt.Errorf(err.Error())
 	//}
@@ -195,14 +196,14 @@ func initdata() {
 	//	log.Error(err.Error())
 	//}
 
-	str := `{"status":1,"error":"","message":"","data":""}`
-	var rs models.RequestResult
-	err := json.Unmarshal([]byte(str), &rs)
-
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		log.Debugf("%+v", rs)
-	}
+	//str := `{"status":1,"error":"","message":"","data":""}`
+	//var rs models.RequestResult
+	//err := json.Unmarshal([]byte(str), &rs)
+	//
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//} else {
+	//	log.Debugf("%+v", rs)
+	//}
 
 }

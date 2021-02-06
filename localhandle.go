@@ -66,20 +66,20 @@ func HandleCreateTemplate(c *gin.Context) models.RequestResult {
 		return models.RequestResult{Error: "Something wrong."}
 	}
 
-	err = c.SaveUploadedFile(file, templatePath+"/"+templatename+"/screenshot.jpg")
+	err = c.SaveUploadedFile(file, templateFolder+"/"+templatename+"/screenshot.jpg")
 	if err != nil {
 		log.Error(err)
 		DeleteTemplate(templatename)
 		return models.RequestResult{Error: "Something wrong."}
 	}
 
-	templates = append(templates, lpmodels.Template{Name: templatename, Status: 0, Path: templatePath + "/" + templatename})
+	templates = append(templates, lpmodels.Template{Name: templatename, Status: 0, Path: templateFolder + "/" + templatename})
 	b, _ := json.Marshal(templates)
 	return models.RequestResult{Status: 1, Data: string(b)}
 }
 func CreateBlankTemplate(name string, file *multipart.FileHeader) error {
 
-	path := templatePath + "/" + name
+	path := templateFolder + "/" + name
 	os.Mkdir(path, 0755)
 	os.Mkdir(path+"/css", 0755)
 	os.Mkdir(path+"/js", 0755)
@@ -147,7 +147,7 @@ func DeleteTemplate(name string) {
 	if name == "" {
 		return
 	}
-	os.RemoveAll(templatePath + "/" + name)
+	os.RemoveAll(templateFolder + "/" + name)
 }
 func HandleEditPage(c *gin.Context) {
 
@@ -160,15 +160,15 @@ func HandleEditPage(c *gin.Context) {
 	}
 
 	//check template exist
-	rootPath := templatePath + "/" + name
-	if _, err := os.Stat(rootPath); os.IsNotExist(err) {
+	templatePath := templateFolder + "/" + name
+	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 
 		c.Writer.WriteString("Template not found. " + gobackstr)
 		return
 	}
 
 	//Get tool
-	tools, err := ReadTemplateTool(rootPath)
+	tools, err := ReadTemplateTool(templatePath)
 	if err != nil {
 		c.Writer.WriteString(err.Error() + gobackstr)
 		return
@@ -177,7 +177,7 @@ func HandleEditPage(c *gin.Context) {
 	mtool := make(map[string]string)
 	toolcontent := ""
 	trashel := `
-<div class="landingpage-trash landingpage-cursor-pointer absolute top-0 hidden bg-opacity-0 z-30" onclick="RemoveItem(this)">
+<div class="landingpage-trash cursor-pointer absolute top-0 hidden bg-opacity-0 z-30" onclick="RemoveItem(this)">
 	<div class="bg-black text-white text-xs rounded py-2 px-4 mb-1 right-0 bottom-full">
       Remove item %s {{trashtitle}}     
     </div>
@@ -218,10 +218,10 @@ func HandleEditPage(c *gin.Context) {
 `
 		}
 	}
-	toolcontent = strings.Replace(toolcontent, "{{template_path}}", templatePath+"/"+name, -1)
+	toolcontent = strings.Replace(toolcontent, "{{template_path}}", templateFolder+"/"+name, -1)
 
 	//get  layout content
-	dat, err := ioutil.ReadFile(rootPath + "/content.html")
+	dat, err := ioutil.ReadFile(templatePath + "/content.html")
 	if err != nil {
 		c.Writer.WriteString(err.Error() + gobackstr)
 		return
@@ -256,7 +256,7 @@ func HandleEditPage(c *gin.Context) {
 	}
 
 	//======================read and create edit page content============================
-	dat, err = ioutil.ReadFile(schemePath + "/edit.html")
+	dat, err = ioutil.ReadFile(schemeFolder + "/edit.html")
 	if err != nil {
 		c.Writer.WriteString(err.Error() + gobackstr)
 		return
@@ -270,12 +270,12 @@ func HandleEditPage(c *gin.Context) {
 	b, _ := json.Marshal(mtool)
 
 	s = strings.Replace(s, "{{mtoolcontent}}", string(b), 1)
-	s = strings.Replace(s, "{{template_path}}", templatePath+"/"+name, -1)
+	s = strings.Replace(s, "{{template_path}}", templateFolder+"/"+name, -1)
 
 	//============================nav item============================
 
 	//read nav item template
-	dat, err = ioutil.ReadFile(templatePath + "/" + name + "/navitem.html")
+	dat, err = ioutil.ReadFile(templateFolder + "/" + name + "/navitem.html")
 	if err != nil {
 		c.Writer.WriteString(err.Error() + gobackstr)
 		return
@@ -292,11 +292,11 @@ func HandleEditPage(c *gin.Context) {
 	//============== preview content in iframe
 	//render css link
 	customcss := `<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
-	if _, err := os.Stat(rootPath + "/css"); err == nil {
-		files, _ := ioutil.ReadDir(rootPath + "/css")
+	if _, err := os.Stat(templatePath + "/css"); err == nil {
+		files, _ := ioutil.ReadDir(templatePath + "/css")
 		for _, f := range files {
 			if !f.IsDir() {
-				customcss += `<link href="` + rootPath + `/css/` + f.Name() + `" rel="stylesheet">`
+				customcss += `<link href="` + templatePath + `/css/` + f.Name() + `" rel="stylesheet">`
 			}
 		}
 	}
@@ -304,19 +304,21 @@ func HandleEditPage(c *gin.Context) {
 	s = strings.Replace(s, "{{customcss}}", customcss, -1)
 	//render js script
 	customjs := ``
-	if _, err := os.Stat(rootPath + "/css"); err == nil {
-		files, _ := ioutil.ReadDir(rootPath + "/js")
+	if _, err := os.Stat(templatePath + "/js"); err == nil {
+		files, _ := ioutil.ReadDir(templatePath + "/js")
 		for _, f := range files {
 			if !f.IsDir() {
-				customjs += `<script src="` + rootPath + `/js/` + f.Name() + `"></script>`
+				customjs += `<script src="` + templatePath + `/js/` + f.Name() + `"></script>`
 			}
 		}
 	}
 	s = strings.Replace(s, "{{customjs}}", customjs, -1)
 	s = strings.Replace(s, "{{customiframejs}}", strings.Replace(customjs, `</script>`, `<\/script>`, -1), -1)
 	s = strings.Replace(s, "{{navitemtemplate}}", navitemcontent, -1)
-	s = strings.Replace(s, "{{navitemtemplate}}", navitemcontent, -1)
+	s = strings.Replace(s, "{{templatePath}}", templatePath, -1)
+
 	s = strings.Replace(s, "{{rootPath}}", rootPath, -1)
+
 	// //Convert your cached html string to byte array
 	// c.Writer.Write([]byte(result))
 	c.Writer.WriteString(s)
@@ -441,14 +443,14 @@ func RemoveComment(s string) string {
 func GetTemplate(session string) ([]lpmodels.Template, error) {
 	var rt []lpmodels.Template
 	localtemplates := make(map[string]string)
-	if _, err := os.Stat(templatePath); err == nil {
-		files, _ := ioutil.ReadDir(templatePath)
+	if _, err := os.Stat(templateFolder); err == nil {
+		files, _ := ioutil.ReadDir(templateFolder)
 		for _, f := range files {
 			if f.IsDir() {
 
 				//check screen shot
-				log.Debugf("check %s", templatePath+"/"+f.Name()+"/screenshot.jpg")
-				if _, err := os.Stat(templatePath + "/" + f.Name() + "/screenshot.jpg"); err == nil {
+				log.Debugf("check %s", templateFolder+"/"+f.Name()+"/screenshot.jpg")
+				if _, err := os.Stat(templateFolder + "/" + f.Name() + "/screenshot.jpg"); err == nil {
 					localtemplates[f.Name()] = f.Name()
 				}
 			}
@@ -478,7 +480,7 @@ func GetTemplate(session string) ([]lpmodels.Template, error) {
 		rt[k].UserID = primitive.NilObjectID
 		rt[k].Status = v.Status
 		if v.Status != 1 {
-			rt[k].Path = templatePath + "/" + v.Name
+			rt[k].Path = templateFolder + "/" + v.Name
 		}
 		if _, ok := localtemplates[v.Name]; ok {
 			delete(localtemplates, v.Name)
@@ -487,7 +489,7 @@ func GetTemplate(session string) ([]lpmodels.Template, error) {
 
 	//add local template into result
 	for k, _ := range localtemplates {
-		rt = append(rt, lpmodels.Template{Name: k, Status: 0, Path: templatePath + "/" + k})
+		rt = append(rt, lpmodels.Template{Name: k, Status: 0, Path: templateFolder + "/" + k})
 	}
 
 	return rt, nil

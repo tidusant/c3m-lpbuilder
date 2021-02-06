@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Landing page builder</title>
 
-    <link href="/scheme/dragula.css" rel="stylesheet">
-    <link href="/scheme/cus.css" rel="stylesheet">
+    <link href="{{rootPath}}/scheme/dragula.css" rel="stylesheet">
+    <link href="{{rootPath}}/scheme/cus.css" rel="stylesheet">
     {{customcss}}
 </head>
 <body class="blur-theme">
@@ -52,7 +52,27 @@
 </div>
 
 
-<div class="btnmodal h-screen w-full fixed left-0 top-0 flex justify-center items-center bg-black bg-opacity-50 hidden">
+<div id="messageModal"  class="z-30 h-screen w-full fixed left-0 top-0 flex justify-center items-center bg-black bg-opacity-50 hidden">
+    <!-- modal -->
+    <div class="bg-white rounded shadow-lg sm:w-1/3 m-4 w-full">
+        <!-- modal header -->
+        <div class="border-b px-4 py-2 flex justify-between items-center">
+            <h3 id="messageTitle">Message</h3>
+            <button class="text-black close-modal">&cross;</button>
+        </div>
+        <!-- modal body -->
+        <div class="p-3">
+            <div id="messageContent"></div>
+        </div>
+        <div class="flex justify-end items-center w-100 border-t p-3">
+            <button class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-white mr-1 close-modal">Cancel</button>
+            <button lp-data-id="confirmMessage" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white mr-1">OK</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="btnmodal z-30  h-screen w-full fixed left-0 top-0 flex justify-center items-center bg-black bg-opacity-50 hidden">
     <!-- modal -->
     <div class="bg-white rounded shadow-lg w-1/3">
         <!-- modal header -->
@@ -65,9 +85,9 @@
 
             <label for="btnTitle" class="text-gray-700">Title</label>
             <input class="border rounded p-1 form-input mt-1 block w-full" id="modalInputTitle" placeholder="input title" />
-            <label for="btnUrl" class="text-gray-700">Url</label>
+            <label for="btnUrl" class="text-gray-700">Link to</label>
             <input class="border rounded p-1 form-input mt-1 block w-full" id="modalInputUrl" placeholder="input url" />
-            <label for="btnUrl" class="text-gray-700">Inner Text</label>
+            <label for="btnUrl" class="text-gray-700">Html code</label>
             <textarea class="border rounded p-1 form-input mt-1 block w-full" id="modalInputText" placeholder="text"></textarea>
         </div>
         <div class="flex justify-end items-center w-100 border-t p-3">
@@ -78,236 +98,282 @@
 </div>
 
 
-<script src="/scheme/dragula.min.js"></script>
+<script src="{{rootPath}}/scheme/dragula.min.js"></script>
 <script>
     //==========modal script
 
-    const btnmodal = document.querySelector('.btnmodal');
-    const closeModal = document.querySelectorAll('.close-modal');
-    const submitModal = document.querySelectorAll('.submit-modal');
-    let fnAfterSubmitModal=()=>{}
-    function showModal(title,url,text) {
-        document.querySelector("#modalInputTitle").value=title
-        document.querySelector("#modalInputUrl").value=url
-        document.querySelector("#modalInputText").value=text
-        btnmodal.classList.remove('hidden')
-    }
+        const btnmodal = document.querySelector('.btnmodal');
+        const messageModal = document.querySelector('#messageModal');
+        const closeModal = document.querySelectorAll('.close-modal');
+        const submitModal = document.querySelectorAll('.submit-modal');
+        let fnAfterSubmitModal = () => {
+        }
+        let fnAfterConfirmModal = () => {
+        }
 
-    closeModal.forEach(close => {
-        close.addEventListener('click', function (){
-            btnmodal.classList.add('hidden')
+        function showModal(title, url, text) {
+            document.querySelector("#modalInputTitle").value = title
+            document.querySelector("#modalInputUrl").value = url
+            document.querySelector("#modalInputText").value = text
+            btnmodal.classList.remove('hidden')
+        }
+
+        closeModal.forEach(close => {
+            close.addEventListener('click', function () {
+                btnmodal.classList.add('hidden')
+                messageModal.classList.add('hidden')
+            });
         });
-    });
 
-    submitModal.forEach(evt => {
-        evt.addEventListener('click', (e)=>{
-            fnAfterSubmitModal()
-            btnmodal.classList.add('hidden')
+        submitModal.forEach(evt => {
+            evt.addEventListener('click', (e) => {
+                fnAfterSubmitModal()
+                btnmodal.classList.add('hidden')
+            });
         });
-    });
-
-    //=====================
-    const MTools={{mtoolcontent}}
-        const navitemtemplate=`{{navitemtemplate}}`
-
-    const drake=dragula([document.querySelector("div.landingpage-pickzone"),...document.querySelectorAll("div.drop-zone"),...document.querySelectorAll("div.mega-menu")],{
-        copy: function (el, target) {
-            return !target.classList.contains("drop-zone")
-
-        },
-        moves: function (el, source, handle, sibling) {
-            if(el.classList.contains("cus-not-draggable"))return false
-            return true; // elements are always draggable by default
-        },
-
-        copySortSource: false,
-        accepts: function (el, target, source, sibling) {
-            console.log(el)
-            return target.classList.contains("drop-zone")
-            //return true; // elements can be dropped in any of the `containers` by default
-        },
-    });
-
-    drake.on('shadow', (el, target, source) => {
 
 
-        if(!target||!target.classList.contains("drop-zone"))return
-        if(!source||!(source.classList.contains("landingpage-pickzone")||source.classList.contains("mega-menu")))return
-        el.className="m-auto landingpage-item-content relative gu-transit"
+        document.querySelector("[lp-data-id=confirmMessage]").addEventListener('click', (e) => {
+            fnAfterConfirmModal()
+            messageModal.classList.add('hidden')
+        });
 
 
-        const content=MTools[el.getAttribute("lp-data-id").replace("landingpage-tool-","")]
+        function showMessage(title, message) {
+            var messageTitle = document.querySelector("#messageTitle")
+            var messageContent = document.querySelector("#messageContent")
+            messageTitle.style.color = "gray"
+            if (title == "Error") messageTitle.style.color = "red";
+            if (title == "Success") messageTitle.style.color = "Green"
 
-        el.innerHTML=content
-    })
-    drake.on('drop', (el, target, source,sibling) => {
-        if(!target||!target.classList.contains("drop-zone"))return
-        if(!source||!(source.classList.contains("landingpage-pickzone")||source.classList.contains("mega-menu")))return
-        if(el.getAttribute("lp-data-id")=="a"){
-            //generate nav item
-            const name=prompt("Navigation Name:","")
-            if(name!=null&&name.trim()!=""){
-                const id=name.replace(" ","-")
-                const content=navitemtemplate.replace(new RegExp("\{\{Id\}\}","gm"),id).replace(new RegExp("\{\{Name\}\}","gm"),name)
-                const navels=document.querySelectorAll(".landingpage-navitem-content")
-                for(let i=0,n=navels.length;i<n;i++){
-                    navels[i].innerHTML+=content
-                    checkEditable(navels[i])
-                }
-                el.setAttribute("lp-data-id","a_"+id+"_"+name)
-                //replace trashtitle token
-                //replace trashtitle token
-                el.innerHTML=el.innerHTML.replace(new RegExp("\{\{Id\}\}","gm"),id).replace(new RegExp("\{\{Name\}\}","gm"),name).replace(new RegExp("\{\{trashtitle\}\}","gm"),name)
-            }else{
-                return false
-            }
+            messageTitle.innerHTML = title;
+            messageContent.innerHTML = message;
+            messageModal.classList.remove("hidden")
         }
-        //replace trashtitle token for other
-        el.innerHTML=el.innerHTML.replace(new RegExp("\{\{trashtitle\}\}","gm"),"")
-        checkEditable(el)
-    })
 
 
 
-    function changeButtonOnclickEvent(btnEl){
-        btnEl.onclick=(e)=>{
-            e.preventDefault()
-            let buttonurl=btnEl.getAttribute("onclick")
-            let buttontitle=btnEl.getAttribute("title")
-            console.log(btnEl)
-            let innerText=btnEl.innerHTML
-            if(buttonurl)
-                buttonurl=buttonurl.replace("window.location=","").replace(/['"]/g,"")
-            else buttonurl="#"
-            // const newurl=prompt("change url:",buttonurl)
-            // if(newurl!=null)
-            //     btnEl.setAttribute(`onclick`,`window.location='`+newurl+`'`)
 
-            fnAfterSubmitModal=()=>{
-                btnEl.setAttribute(`onclick`,`window.location='`+document.querySelector("#modalInputUrl").value+`'`)
-                btnEl.setAttribute(`title`,document.querySelector("#modalInputTitle").value)
-                btnEl.innerHTML=document.querySelector("#modalInputText").value
-                changeButtonOnclickEvent(btnEl)
-            }
-            showModal(buttonurl,buttontitle,innerText)
-            //call recursive to apply new attribute value
 
-        }
-    }
-    function checkEditable(el){
-        if(el.classList.contains("element-not-editable"))return
-        if(el.classList.contains("close-modal"))return
-        if(el.tagName=="A"){
-            el.onclick=(e)=>{
+        function changeButtonOnclickEvent(btnEl) {
+            btnEl.onclick = (e) => {
                 e.preventDefault()
-                fnAfterSubmitModal=()=>{
-                    el.href=document.querySelector("#modalInputUrl").value
-                    el.title=document.querySelector("#modalInputTitle").value
-                    el.innerHTML=document.querySelector("#modalInputText").value
-                    el.focus()
-                }
-                showModal(el.title,el.href,el.innerHTML)
-            }
+                let buttonurl = btnEl.getAttribute("onclick")
+                let buttontitle = btnEl.getAttribute("title")
 
-        }
-        if(el.tagName=="IMG"){
-            el.onclick=(e)=>{
-                e.preventDefault()
-                fnAfterSubmitModal=()=>{
-                    el.src=document.querySelector("#modalInputUrl").value
-                    el.title=document.querySelector("#modalInputTitle").value
-                    //el.innerHTML=document.querySelector("#modalInputText").value
-                    //el.focus()
+                let innerText = btnEl.innerHTML
+                if (buttonurl)
+                    buttonurl = buttonurl.replace("window.location=", "").replace(/['"]/g, "")
+                else buttonurl = "#"
+                // const newurl=prompt("change url:",buttonurl)
+                // if(newurl!=null)
+                //     btnEl.setAttribute(`onclick`,`window.location='`+newurl+`'`)
+
+                fnAfterSubmitModal = () => {
+                    btnEl.setAttribute(`onclick`, `window.location='` + document.querySelector("#modalInputUrl").value + `'`)
+                    btnEl.setAttribute(`title`, document.querySelector("#modalInputTitle").value)
+                    btnEl.innerHTML = document.querySelector("#modalInputText").value
+                    changeButtonOnclickEvent(btnEl)
                 }
-                showModal(el.title,el.src,"N/A")
+                showModal(buttontitle, buttonurl, innerText)
+                //call recursive to apply new attribute value
+
             }
         }
-        if(el.tagName=="BUTTON"){
-            if(el.classList.contains("btnsubmit"))
-                el.onclick=()=>{return false}
-            else changeButtonOnclickEvent(el)
-        }
-        if(el.childElementCount>0){
-            if(el.tagName=="P"){
-             el.contentEditable=true
+
+        function checkEditable(el) {
+            if (el.classList.contains("element-not-editable")) return
+            if (el.classList.contains("close-modal")) return
+            if (el.tagName == "A") {
+                el.onclick = (e) => {
+                    e.preventDefault()
+                    fnAfterSubmitModal = () => {
+                        el.href = document.querySelector("#modalInputUrl").value
+                        el.title = document.querySelector("#modalInputTitle").value
+                        el.innerHTML = document.querySelector("#modalInputText").value
+                        el.focus()
+                    }
+                    showModal(el.title, el.href, el.innerHTML)
+                }
+
             }
+            if (el.tagName == "IMG") {
+                el.onclick = (e) => {
+                    e.preventDefault()
+                    fnAfterSubmitModal = () => {
+                        el.src = document.querySelector("#modalInputUrl").value
+                        el.title = document.querySelector("#modalInputTitle").value
+                        //el.innerHTML=document.querySelector("#modalInputText").value
+                        //el.focus()
+                    }
+                    showModal(el.title, el.src, "N/A")
+                }
+            }
+            if (el.tagName == "BUTTON") {
+                if (el.classList.contains("btnsubmit"))
+                    el.onclick = () => {
+                        return false
+                    }
+                else changeButtonOnclickEvent(el)
+            }
+            if (el.childElementCount > 0) {
+                if (el.tagName == "P") {
+                    el.contentEditable = true
+                }
                 for (let i = 0, n = el.childElementCount; i < n; i++)
                     checkEditable(el.children[i])
 
-        }else{
-            //check if have text
-            if(el.innerText!=""){
-                el.contentEditable=true
+            } else {
+                //check if have text
+                if (el.innerText != "") {
+                    el.contentEditable = true
+                }
             }
         }
-    }
-    function RemoveItem(el){
-        const vtypes=el.parentNode.getAttribute("lp-data-id").split("_")
-        if(vtypes.length>0){
-            if(vtypes[0]=="a"){
-                document.querySelector("[lp-data-id=landingpage-navitem-"+vtypes[1]+"]").remove()
-            }
-        }
-        el.parentNode.remove()
-    }
 
-    function DisableContentEditable(){
-        document.querySelectorAll(`[contenteditable]`).forEach(el=>{
-            el.contentEditable=false
+        function RemoveItem(el) {
+            const vtypes = el.parentNode.getAttribute("lp-data-id").split("_")
+            if (vtypes.length > 0) {
+                //if item is an anchor then remove nav item
+                if (vtypes[0] == "a") {
+                    try {
+                        document.querySelector("[lp-data-id=landingpage-navitem-" + vtypes[1] + "]").remove()
+                    } catch (e) {
+                        //skip if header is remove
+                    }
+                }
+            }
+            el.parentNode.remove()
+        }
+
+        function RemoveStaticItem(el) {
+            fnAfterConfirmModal = () => {
+                el.parentNode.remove()
+            }
+            showMessage("Message", "If you delete, this item will not generate unless you create a fresh content of this template. Are you sure?")
+        }
+
+        function DisableContentEditable() {
+            document.querySelectorAll(`[contenteditable]`).forEach(el => {
+                el.contentEditable = false
+            })
+        }
+
+        function PreviewMode(enable) {
+            enable = enable == undefined ? true : enable
+            const contentEl = document.querySelector("div[lp-data-id=landingpage-content]")
+            const ifr = document.querySelector("iframe#preview")
+            const previewcontent = document.querySelector("div[lp-data-id=landingpage-previewcontent]")
+            const toolcontent = document.querySelector("div[lp-data-id=landingpage-itemcontent]")
+            const previewtoolcontent = document.querySelector("div[lp-data-id=landingpage-previewitemcontent]")
+            if (enable) {
+                DisableContentEditable()
+                const previewContent = `<!DOCTYPE html><html lang="en"><head>{{customcss}}</head><body>`
+                const endContent = `{{customiframejs}}</body></html>`
+                let content = contentEl.innerHTML
+                //remove trash button content
+                content = content.replace(/<div class="landingpage-trash .*?<\/div>.*?<\/div>/gsi, ``)
+                //remove lp-data-id attr
+                content = content.replace(/lp-data-id="(.*?)"/gi, ``)
+
+                ifr.contentWindow.document.open();
+                ifr.contentWindow.document.write(previewContent + content + endContent);
+                ifr.contentWindow.document.close();
+
+                contentEl.classList.add("hidden")
+                previewcontent.classList.remove("hidden")
+                toolcontent.classList.add("hidden")
+                previewtoolcontent.classList.remove("hidden")
+                ChangePreviewMode(3)
+            } else {
+                contentEl.classList.remove("hidden")
+                previewcontent.classList.add("hidden")
+                toolcontent.classList.remove("hidden")
+                previewtoolcontent.classList.add("hidden")
+                checkEditable(document.querySelector("div[lp-data-id=landingpage-content]"))
+            }
+        }
+
+        function ChangePreviewMode(mode) {
+            const ifr = document.querySelector("iframe#preview")
+            const divcontent = document.querySelector("div[lp-data-id=landingpage-previewcontent]")
+            if (mode == 1) {
+                ifr.className = "landingpage-mobileframe-content"
+                divcontent.className = "landingpage-preview-mobileframe"
+            } else if (mode == 2) {
+                ifr.className = "landingpage-tabletframe-content"
+                divcontent.className = "landingpage-preview-tabletframe"
+
+            } else if (mode == 3) {
+                ifr.className = "h-full w-full"
+                divcontent.className = "h-full"
+            }
+        }
+
+    //===================== Dragularjs
+    const MTools ={{mtoolcontent}}
+    const navitemtemplate = `{{navitemtemplate}}`
+
+    window.onload = function(e) {
+        const drake = dragula([document.querySelector("div.landingpage-pickzone"), ...document.querySelectorAll("div.drop-zone"), ...document.querySelectorAll("div.mega-menu")], {
+            copy: function (el, target) {
+                return !target.classList.contains("drop-zone")
+
+            },
+            moves: function (el, source, handle, sibling) {
+                if (el.classList.contains("cus-not-draggable")) return false
+                return true; // elements are always draggable by default
+            },
+
+            copySortSource: false,
+            accepts: function (el, target, source, sibling) {
+
+                return target.classList.contains("drop-zone")
+                //return true; // elements can be dropped in any of the `containers` by default
+            },
+        });
+
+        drake.on('shadow', (el, target, source) => {
+
+
+            if (!target || !target.classList.contains("drop-zone")) return
+            if (!source || !(source.classList.contains("landingpage-pickzone") || source.classList.contains("mega-menu"))) return
+            el.className = "m-auto landingpage-item-content relative gu-transit"
+
+
+            const content = MTools[el.getAttribute("lp-data-id").replace("landingpage-tool-", "")]
+
+            el.innerHTML = content
         })
-    }
-    function PreviewMode(enable){
-        enable=enable==undefined?true:enable
-        const contentEl = document.querySelector("div[lp-data-id=landingpage-content]")
-        const ifr = document.querySelector("iframe#preview")
-        const previewcontent=document.querySelector("div[lp-data-id=landingpage-previewcontent]")
-        const toolcontent=document.querySelector("div[lp-data-id=landingpage-itemcontent]")
-        const previewtoolcontent=document.querySelector("div[lp-data-id=landingpage-previewitemcontent]")
-        if(enable) {
-            DisableContentEditable()
-            const previewContent = `<!DOCTYPE html><html lang="en"><head>{{customcss}}</head><body>`
-            const endContent= `{{customiframejs}}</body></html>`
-            let content=contentEl.innerHTML
-            //remove trash button content
-            content=content.replace(/<div class="landingpage-trash .*?<\/div>.*?<\/div>/gsi,``)
-            //remove lp-data-id attr
-            content=content.replace(/lp-data-id="(.*?)"/gi,``)
-
-            ifr.contentWindow.document.open();
-            ifr.contentWindow.document.write(previewContent + content + endContent);
-            ifr.contentWindow.document.close();
-
-            contentEl.classList.add("hidden")
-            previewcontent.classList.remove("hidden")
-            toolcontent.classList.add("hidden")
-            previewtoolcontent.classList.remove("hidden")
-            ChangePreviewMode(3)
-        }else{
-            contentEl.classList.remove("hidden")
-            previewcontent.classList.add("hidden")
-            toolcontent.classList.remove("hidden")
-            previewtoolcontent.classList.add("hidden")
-            checkEditable(document.querySelector("div[lp-data-id=landingpage-content]"))
-        }
+        drake.on('drop', (el, target, source, sibling) => {
+            if (!target || !target.classList.contains("drop-zone")) return
+            if (!source || !(source.classList.contains("landingpage-pickzone") || source.classList.contains("mega-menu"))) return
+            if (el.getAttribute("lp-data-id") == "a") {
+                //generate nav item
+                const name = prompt("Navigation Name:", "")
+                if (name != null && name.trim() != "") {
+                    const id = name.replace(" ", "-")
+                    const content = navitemtemplate.replace(new RegExp("\{\{Id\}\}", "gm"), id).replace(new RegExp("\{\{Name\}\}", "gm"), name)
+                    const navels = document.querySelectorAll(".landingpage-navitem-content")
+                    for (let i = 0, n = navels.length; i < n; i++) {
+                        navels[i].innerHTML += content
+                        checkEditable(navels[i])
+                    }
+                    el.setAttribute("lp-data-id", "a_" + id + "_" + name)
+                    //replace trashtitle token
+                    //replace trashtitle token
+                    el.innerHTML = el.innerHTML.replace(new RegExp("\{\{Id\}\}", "gm"), id).replace(new RegExp("\{\{Name\}\}", "gm"), name).replace(new RegExp("\{\{trashtitle\}\}", "gm"), name)
+                } else {
+                    return false
+                }
+            }
+            //replace trashtitle token for other
+            el.innerHTML = el.innerHTML.replace(new RegExp("\{\{trashtitle\}\}", "gm"), "")
+            checkEditable(el)
+        })
+        PreviewMode(false)
     }
 
-    function ChangePreviewMode(mode){
-        const ifr = document.querySelector("iframe#preview")
-        const divcontent=document.querySelector("div[lp-data-id=landingpage-previewcontent]")
-        if(mode==1){
-            ifr.className="landingpage-mobileframe-content"
-            divcontent.className="landingpage-preview-mobileframe"
-        }else if(mode==2){
-            ifr.className="landingpage-tabletframe-content"
-            divcontent.className="landingpage-preview-tabletframe"
-
-        }else if(mode==3){
-            ifr.className="h-full w-full"
-            divcontent.className="h-full"
-        }
-    }
-
-    PreviewMode(false)
 
 </script>
 </body>
